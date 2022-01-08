@@ -1,0 +1,12 @@
+database:
+  host: "localhost"        # 数据库地址 本地 或 ip
+  port: 3306               # 数据库端口
+  name: "v2board"          # 数据库名称
+  username: "root"         # 数据库用户名
+  password: "root"         # 数据库密码
+
+service:
+  port: 8082  # 服务运行端口 需要与前端一致
+  email_suffix: "uuCard.com" # 用户邮箱后缀 生成出来的邮箱格式 兑换码+时间戳+自定义后缀
+  password: "1234567890"     # 账户默认密码 v2board原版无偏移值 可直接登入
+  subscribe_url: "https://xxxxxx.com" # 订阅地址 不要加 /
