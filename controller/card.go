@@ -49,7 +49,7 @@ func (card *CardController) Verify(ctx *gin.Context) {
 			"message": "兑换码已被使用",
 		})
 		return
-	} else if coupon.EndedAt < time.Now().Unix() || coupon.StartedAt > time.Now().Unix() {
+	} else if coupon.EndedAt < time.Now().Unix() || coupon.StartedAt < time.Now().Unix() {
 		ctx.JSON(http.StatusOK, gin.H{
 			"code":    0,
 			"message": "兑换码不在有效期",
