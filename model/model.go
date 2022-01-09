@@ -10,7 +10,7 @@ type User struct {
 	D              int64     `json:"d"`
 	Uuid           uuid.UUID `json:"uuid"`
 	GroupId        uint      `json:"group_Id"`
-	PlanId         uint      `json:"plan_id"`
+	PlanId         string    `json:"plan_id"`
 	TransferEnable int64     `json:"transfer_enable"`
 	Token          string    `json:"token"`
 	ExpiredAt      int64     `json:"expired_at"`
@@ -36,7 +36,7 @@ type Coupon struct {
 	Code         string `json:"code"`
 	Type         uint   `json:"type"`
 	LimitUse     uint   `json:"limit_use"`
-	LimitPlanIds uint   `json:"limit_plan_ids"`
+	LimitPlanIds string `json:"limit_plan_ids"`
 	Value        uint   `json:"value"`
 	StartedAt    int64  `json:"started_at"`
 	EndedAt      int64  `json:"ended_at"`

@@ -32,7 +32,7 @@ func RunRoute() {
    / /  / \  \
  ./~~~~~~~~~~~\.
 ( .",^. -". '.~ )
- '~~~~~~~~~~~~~'    启动成功.....  api服务端口:%d`, conf.Service.Port))
+ '~~~~~~~~~~~~~'    启动成功..... v1.0.1  api服务端口:%d`, conf.Service.Port))
 	if conf.Service.Port <= 0 {
 		if err := r.Run(":8080"); err != nil {
 			panic(fmt.Sprintf("route error:%s", err))

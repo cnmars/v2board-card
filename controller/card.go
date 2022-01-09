@@ -9,6 +9,7 @@ import (
 	"github.com/miyaUU/v2board-card/model"
 	"github.com/miyaUU/v2board-card/utils"
 	"net/http"
+	"regexp"
 	"time"
 )
 
@@ -49,15 +50,25 @@ func (card *CardController) Verify(ctx *gin.Context) {
 			"message": "兑换码已被使用",
 		})
 		return
-	} else if coupon.EndedAt < time.Now().Unix() || coupon.StartedAt > time.Now().Unix() {
+	} else if coupon.EndedAt < time.Now().Unix() {
 		ctx.JSON(http.StatusOK, gin.H{
 			"code":    0,
 			"message": "兑换码不在有效期",
 		})
 		return
+
+	} else if coupon.StartedAt > time.Now().Unix() {
+		ctx.JSON(http.StatusOK, gin.H{
+			"code":    0,
+			"message": "兑换码未到开始兑换日",
+		})
+		return
 	}
 
-	DB.Where("id = ?", coupon.LimitPlanIds).First(&plan)
+	re := regexp.MustCompile("[0-9]+")
+	planIds := re.FindAllString(coupon.LimitPlanIds, -1)[0]
+
+	DB.Where("id = ?", planIds).First(&plan)
 	if plan.Id <= 0 {
 		ctx.JSON(http.StatusOK, gin.H{
 			"code":    0,
@@ -65,7 +76,6 @@ func (card *CardController) Verify(ctx *gin.Context) {
 		})
 		return
 	}
-
 	uuid := uuid2.New()
 	email := fmt.Sprintf("%s%d@uucard.com", coupon.Code, time.Now().Unix())
 	password := utils.PasswordHash(c.Service.Password)
@@ -73,37 +83,37 @@ func (card *CardController) Verify(ctx *gin.Context) {
 
 	switch coupon.Value {
 	case plan.MonthPrice:
-		NewUser := UUNewUser(email, password, uuid, token, coupon.LimitPlanIds, plan.GroupId, plan.TransferEnable, 86400*30)
+		NewUser := UUNewUser(email, password, uuid, token, planIds, plan.GroupId, plan.TransferEnable, 86400*30)
 		DB.Create(&NewUser)
 		DB.Model(&coupon).Update("limit_use", 0)
 		Response(ctx, NewUser)
 
 	case plan.QuarterPrice:
-		NewUser := UUNewUser(email, password, uuid, token, coupon.LimitPlanIds, plan.GroupId, plan.TransferEnable, 86400*90)
+		NewUser := UUNewUser(email, password, uuid, token, planIds, plan.GroupId, plan.TransferEnable, 86400*90)
 		DB.Create(&NewUser)
 		DB.Model(&coupon).Update("limit_use", 0)
 		Response(ctx, NewUser)
 
 	case plan.HalfYearPrice:
-		NewUser := UUNewUser(email, password, uuid, token, coupon.LimitPlanIds, plan.GroupId, plan.TransferEnable, 86400*180)
+		NewUser := UUNewUser(email, password, uuid, token, planIds, plan.GroupId, plan.TransferEnable, 86400*180)
 		DB.Create(&NewUser)
 		DB.Model(&coupon).Update("limit_use", 0)
 		Response(ctx, NewUser)
 
 	case plan.YearPrice:
-		NewUser := UUNewUser(email, password, uuid, token, coupon.LimitPlanIds, plan.GroupId, plan.TransferEnable, 86400*360)
+		NewUser := UUNewUser(email, password, uuid, token, planIds, plan.GroupId, plan.TransferEnable, 86400*360)
 		DB.Create(&NewUser)
 		DB.Model(&coupon).Update("limit_use", 0)
 		Response(ctx, NewUser)
 
 	case plan.TwoYearPrice:
-		NewUser := UUNewUser(email, password, uuid, token, coupon.LimitPlanIds, plan.GroupId, plan.TransferEnable, 86400*720)
+		NewUser := UUNewUser(email, password, uuid, token, planIds, plan.GroupId, plan.TransferEnable, 86400*720)
 		DB.Create(&NewUser)
 		DB.Model(&coupon).Update("limit_use", 0)
 		Response(ctx, NewUser)
 
 	case plan.ThreeYearPrice:
-		NewUser := UUNewUser(email, password, uuid, token, coupon.LimitPlanIds, plan.GroupId, plan.TransferEnable, 86400*1080)
+		NewUser := UUNewUser(email, password, uuid, token, planIds, plan.GroupId, plan.TransferEnable, 86400*1080)
 		DB.Create(&NewUser)
 		DB.Model(&coupon).Update("limit_use", 0)
 		Response(ctx, NewUser)
@@ -152,7 +162,8 @@ func (card *CardController) Query(ctx *gin.Context) {
 	})
 }
 
-func UUNewUser(email string, password string, uuid uuid2.UUID, token string, planId uint, groupID uint, transferEnable int64, expireAt int64) model.User {
+func UUNewUser(email string, password string, uuid uuid2.UUID, token string, planId string, groupID uint, transferEnable int64, expireAt int64) model.User {
+
 	user := model.User{
 		Email:          email,
 		Password:       password,
